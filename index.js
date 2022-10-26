@@ -1,35 +1,35 @@
-const calculateScore = (scores) => {
-    let spare = false;
-    let strike = false;
-    return scores.reduce((acc, next) => {
-        // Separate treatment for 10th frame
-        const additionalPoints = calculateAdditionalPoints(next, spare, strike);
-        spare = false;
-        strike = false;
+const calculateScore = (throws) => {
+    let sum = 0;
+    let firstThrow = true;
+    let secondThrow = false;
 
-        const sumOfFrame = calculateSum(next) + additionalPoints;
-        if (next[0] === 10) strike = true;
-        else if (calculateSum(next) === 10) {
-            spare = true
+    for (let i=0; i<throws.length; i++) {
+        const strike = firstThrow && throws[i] === 10;
+        const spare = secondThrow && (throws[i-1] + throws[i] === 10);
+
+        if (firstThrow && !strike) {
+            firstThrow = false;
+            secondThrow = true;
         }
-        return acc + sumOfFrame
-    }, 0);
-};
-
-const calculateSum = (array) => {
-    return array.reduce((acc, next) => acc + next, 0);
+        else if (secondThrow && !spare) {
+            firstThrow = true;
+            secondThrow = false;
+        }
+        const additionalPoints = calculateAdditionalPoints(throws, i, strike, spare);
+        sum += throws[i] + additionalPoints;
+    }
+    return sum;
 }
 
-const calculateAdditionalPoints = (array, spare, strike) => {
-    if (spare) {
-        return array[0]
+const calculateAdditionalPoints = (throws, i, strike, spare) => {
+    let additionalPoints = 0;
+    if (strike) {
+        additionalPoints = throws[i+1] + throws[i+2];
     }
-
-    else if (strike) {
-        return calculateSum(array);
+    else if (i != 0 && spare) {
+        additionalPoints = throws[i+1];
     }
-
-    return 0;
+    return additionalPoints;
 }
 
 module.exports = calculateScore;

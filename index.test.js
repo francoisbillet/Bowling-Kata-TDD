@@ -1,29 +1,60 @@
-const calculateScore = require("./index");
+const Game = require("./index");
 
-it('should return the score for 2 normal throws', () => {
-    expect(calculateScore([2,3])).toBe(5);
+let game;
+
+beforeEach(() => {
+    game = new Game();
 })
 
-it('should return the score for a strike followed by 2 normal throws', () => {
-    expect(calculateScore([10,2,3])).toBe(20);
+it('should create a new game', () => {
+    expect(game).toBeDefined();
 })
 
-it('should return the score for a spare followed by a normal throws', () => {
-    expect(calculateScore([7,3,5])).toBe(20);
+it('should return 0 for a full gutter game', () => {
+    rollMany(game, 0, 20);
+    checkScore(game, 0);
 })
 
-it('should return the score for a strike followed by a spare (3 and 7) and 2 normal throws', () => {
-    expect(calculateScore([10,3,7,5])).toBe(40);
+it('should return score for a full one-pin game', () => {
+    rollMany(game, 1, 20);
+    checkScore(game, 20);
 })
 
-it('should return the score for a strike followed by a spare (0 and 10) and 2 normal throws', () => {
-    expect(calculateScore([10,0,10,5])).toBe(40);
+// Spares
+it('should return score for a spare followed by a normal throw and then only gutter', () => {
+    game.roll(6);
+    game.roll(4);
+    game.roll(3);
+    rollMany(game, 0, 17);
+    checkScore(game, 16);
 })
 
-it('should return the score for a 10th frame of 2 normal throws', () => {
-    expect(calculateScore([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,4])).toBe(9);
+it('should return score for a game full of spares', () => {
+    rollMany(game, 5, 21);
+    checkScore(game, 150);
 })
 
-it('should return the score for a 10th frame of a spare and a normal throw', () => {
-    expect(calculateScore([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5])).toBe(15);
+
+// Strikes
+it('should return score for a strike followed by 2 normal throws', () => {
+    game.roll(10);
+    rollMany(game, 3, 2);
+    rollMany(game, 0, 16)
+    checkScore(game, 22);
 })
+
+it('should return score for a perfect game (only strikes)', () => {
+    rollMany(game, 10, 12);
+    checkScore(game, 300);
+})
+
+// Utility functions
+const rollMany = (game, pins, throws) => {
+    for(let i=0; i<throws; i++) {
+        game.roll(pins);
+    }
+}
+
+const checkScore = (game, score) => {
+    expect(game.calculateScore()).toBe(score);
+}
